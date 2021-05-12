@@ -2,7 +2,8 @@
 Simple tool to index filenames on a directory and search tool
 
 My comments in french for a fresh start
-TODO : everything in english
+- [ ] TODO : everything in english
+- [ ] TODO : cleaner code about --output options
 
 Indexation et recherche par wildcard (* et ?) sur des noms de fichiers
 #Exemples : 
@@ -18,18 +19,18 @@ un fichier d'index lecteurC.pbz2 sera générer (compressé)
 le fichier d'index lu doit se nommer lecteurC.pbz2
 
 
-##Usage : 
--h ou --help : affiche l'aide
--v ou --verbose : affiche plus d'information sur la sortie standard
+## Usage : 
+ * -h ou --help : affiche l'aide
+ * -v ou --verbose : affiche plus d'information sur la sortie standard
 
-## Mode indexation : 2 paramètres obligatoires
--p ou --path <pathname>: chemin à indexer
--i ou --index <indexfilename> : lance l'indexation de <pathname> et écrit l'indexe dans <indexfilename>
+### Mode indexation : 2 paramètres obligatoires
+ * -p ou --path <pathname>: chemin à indexer
+ * -i ou --index <indexfilename> : lance l'indexation de <pathname> et écrit l'indexe dans <indexfilename>
 
-## Mode recherche : 2 paramètres obligatoires *****
--f ou --find <search>: recherche dans le fichier d'index <indexfilename> les noms de fichiers qui correspondent :
-        *.xls : tous les fichiers Excel
-        *202?.log : tous les fichiers .log comme fic2020.log, param2021.log, etc 
--i ou --index <indexfilename> : utilise le fichier d'index <indexfilename> (obligatoire)
--o ou --output <ouputfilename>: écrire le résultat de la recherche dans le fichier <ouputfilename>
+### Mode recherche : 2 paramètres obligatoires *****
+* -f ou --find <search>: recherche dans le fichier d'index <indexfilename> les noms de fichiers qui correspondent :
+       ** *.xls : tous les fichiers Excel
+       ** *202?.log : tous les fichiers .log comme fic2020.log, param2021.log, etc 
+* -i ou --index <indexfilename> : utilise le fichier d'index <indexfilename> (obligatoire)
+* -o ou --output <ouputfilename>: écrire le résultat de la recherche dans le fichier <ouputfilename>
         (ignoré si pas en mode recherche)
