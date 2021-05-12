@@ -9,13 +9,16 @@ Indexation et recherche par wildcard (* et ?) sur des noms de fichiers
 
 1 - indexer mon disque dur :
 >python file_dir.py -index "lecteurC" -path "c:\"
->un fichier d'index lecteurC.pbz2 sera générer (compressé)
+
+un fichier d'index lecteurC.pbz2 sera générer (compressé)
 
 2 - recherche tous les fichiers log
-    >python file_dir.py -find "*.log" -i "lecteurC"
-    le fichier d'index lu doit se nommer lecteurC.pbz2
+>python file_dir.py -find "*.log" -i "lecteurC"
 
-#Usage : 
+le fichier d'index lu doit se nommer lecteurC.pbz2
+
+
+##Usage : 
 -h ou --help : affiche l'aide
 -v ou --verbose : affiche plus d'information sur la sortie standard
 
