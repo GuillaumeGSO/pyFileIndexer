@@ -4,6 +4,8 @@ Simple tool to index filenames on a directory and search tool
 My comments in french for a fresh start
 - [ ] TODO : everything in english
 - [ ] TODO : cleaner code about --output options
+- [ ] TODO : code separation between main, interface, index file handling...
+- [ ] TODO : add interactive mode if index file or path name not provided ?
 
 Indexation et recherche par wildcard (* et ?) sur des noms de fichiers
 #Exemples : 
