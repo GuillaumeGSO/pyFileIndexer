@@ -1,7 +1,7 @@
 import sys
 import getopt
 from File_dir.GUI import construct_interface
-from File_dir.file_parser import parseDirectory, searchWithWildcards
+from File_dir.file_parser import parseDirectory, searchWithWildcards, read_index_file
 from utils import trace
 
 def main():
@@ -102,7 +102,8 @@ def main():
 
     # Lancement interface graphique
     if INTERACTIF_MODE:
-        construct_interface()
+        #TODO get the index file name in the args or prompt for it (GUI)
+        construct_interface(read_index_file("index"))
         sys.exit(1)
 
     # Lancement de l'indexation
