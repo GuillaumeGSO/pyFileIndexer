@@ -6,7 +6,36 @@ from guppy import hpy
 import pickle
 import bz2
 import fnmatch
+import PySimpleGUI as sg
 
+def construct_interface():
+    lst  = list(findFilesWithName("index", "*.pdf"))
+    sg.theme('Dark Red 1')   # Add a little color to your windows
+    # All the stuff inside your window. This is the PSG magic code compactor...
+    layout = [  
+                [sg.InputText(key="-INPUT-", enable_events=True), sg.Text(len(lst), key="-NB-")],
+                [sg.Listbox(lst, size=(100, 30), auto_size_text = True, key="-RESULT-")],
+                [sg.Exit()]
+                ]
+
+    # Create the Window
+    window = sg.Window('Py Simple Indexer', layout)
+    # Event Loop to process "events"
+    while True:             
+        event, values = window.read()
+        if event in (sg.WIN_CLOSED, 'Exit'):
+            break
+        elif event=='-INPUT-':
+            #TODO ne pas relire le fichier index à chaque fois : faire juste la recherche
+            lst = list(findFilesWithName("index", values['-INPUT-']))
+            window['-NB-'].update(len(lst))
+            window['-RESULT-'].update(lst)
+        elif event == '-RESULT-':
+            print('result', values)
+        else:
+            print(event, values)
+
+    window.close()
 
 def main():
     DESC = '''
@@ -19,7 +48,8 @@ def main():
     2 - recherche tous les fichiers log
         >>python file_dir.py -find "*.log" -i "lecteurC"
         le fichier d'index lu doit se nommer lecteurC.pbz2
-
+    3 - ouvrir une interface graphique
+        >>python file_dir.py -w
 
     Usage : 
     -h ou --help : affiche l'aide
@@ -39,6 +69,7 @@ def main():
     '''
     global VERBOSE
     VERBOSE = False
+    INTERACTIF_MODE = True
     PATH_NAME = ''
     INDEX_FILE_NAME = ''
     FIND_STRING = ''
@@ -46,9 +77,9 @@ def main():
 
     full_cmd_arguments = sys.argv
     argument_list = full_cmd_arguments[1:]
-    short_options = "hvp:i:f:o:"
+    short_options = "hvp:i:f:o:w"
     long_options = ["help", "verbose",
-                    "pathname=", "index=", "find=", "output="]
+                    "pathname=", "index=", "find=", "output=", "window"]
 
     try:
         arguments, _ = getopt.getopt(
@@ -66,38 +97,46 @@ def main():
             print(DESC)
         elif current_argument in ("-p", "--pathname"):
             PATH_NAME = current_value
+            INTERACTIF_MODE = False
         elif current_argument in ("-i", "--index"):
             INDEX_FILE_NAME = current_value
+            INTERACTIF_MODE = False
         elif current_argument in ("-f", "--find"):
             FIND_STRING = current_value
+            INTERACTIF_MODE = False
         elif current_argument in ("-o", "--output"):
             OUTPUT_FILE = current_value
 
     # Appliquer les règles de fonctionnement le plus simplement possible
+    if not INTERACTIF_MODE:
+        # Il faut au moins choisir un mode : indexation ou recherche
+        if PATH_NAME == '' and FIND_STRING == '':
+            print(DESC)
+            print("Erreur de syntaxe : ni indexation ni recherche demandée")
+            sys.exit(2)
 
-    # Il faut au moins choisir un mode : indexation ou recherche
-    if PATH_NAME == '' and FIND_STRING == '':
-        print(DESC)
-        print("Erreur de syntaxe : ni indexation ni recherche demandée")
-        sys.exit(2)
+        # indexation et recherche incompatibles
+        if PATH_NAME != '' and FIND_STRING != '':
+            print(DESC)
+            print("<pathname> ne peut pas être utiliser en même temps que <search>")
+            sys.exit(2)
 
-    # indexation et recherche incompatibles
-    if PATH_NAME != '' and FIND_STRING != '':
-        print(DESC)
-        print("<pathname> ne peut pas être utiliser en même temps que <search>")
-        sys.exit(2)
+        # indexation a besoin d'un chemin
+        if INDEX_FILE_NAME != '' and PATH_NAME == '' and FIND_STRING == '':
+            print(DESC)
+            print("<pathname> obligatoire si demande d'indexation")
+            sys.exit(2)
 
-    # indexation a besoin d'un chemin
-    if INDEX_FILE_NAME != '' and PATH_NAME == '' and FIND_STRING == '':
-        print(DESC)
-        print("<pathname> obligatoire si demande d'indexation")
-        sys.exit(2)
+        # Recherche demandée sans fichier d'index
+        if INDEX_FILE_NAME == '':
+            print(DESC)
+            print("<indexfilename> obligatoire pour lancer une recherche")
+            sys.exit(2)
 
-    # Recherche demandée sans fichier d'index
-    if INDEX_FILE_NAME == '':
-        print(DESC)
-        print("<indexfilename> obligatoire pour lancer une recherche")
-        sys.exit(2)
+    # Lancement interface graphique
+    if INTERACTIF_MODE:
+        construct_interface()
+        sys.exit(1)
 
     # Lancement de l'indexation
     if INDEX_FILE_NAME != '' and PATH_NAME != '':
@@ -118,6 +157,7 @@ def main():
             print("Erreur pendant la recherche... -v pour visualiser")
             trace(str(err))
             sys.exit(2)
+    
 
 
 def searchWithWildcards(my_index_file, mySearch, output_file):
