@@ -4,7 +4,7 @@ from File_dir.GUI import construct_interface
 from File_dir.file_parser import parseDirectory, searchWithWildcards, read_index_file
 from utils import trace
 
-def main():
+async def main():
     '''
     Indexation et recherche par wildcard (* et ?) sur des noms de fichiers
 
@@ -120,7 +120,7 @@ def main():
     # Lancement recherche
     if INDEX_FILE_NAME != '' and FIND_STRING != '':
         try:
-            searchWithWildcards(INDEX_FILE_NAME, FIND_STRING, OUTPUT_FILE)
+            await searchWithWildcards(INDEX_FILE_NAME, FIND_STRING, OUTPUT_FILE)
         except RuntimeError as err:
             print("Erreur pendant la recherche... -v pour visualiser")
             trace(str(err))

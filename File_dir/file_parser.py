@@ -6,6 +6,7 @@ import pickle
 import bz2
 import fnmatch
 from utils import trace
+import asyncio
 
 
 def parseDirectory(index_file_name, dirName):
@@ -17,7 +18,8 @@ def parseDirectory(index_file_name, dirName):
         setOfFiles.update(set([os.path.join(dirpath, file)
                           for file in filenames]))
     ed = time.time()
-    File_dir.trace(f'Terminé en {(ed-st):.2f} secondes : {len(setOfFiles)} fichiers')
+    File_dir.trace(
+        f'Terminé en {(ed-st):.2f} secondes : {len(setOfFiles)} fichiers')
 
     # save the set into a pickle
     write_index_file(index_file_name, setOfFiles)
@@ -25,42 +27,68 @@ def parseDirectory(index_file_name, dirName):
     # Print memory usage
     trace(h.heap())
 
+
 def write_index_file(my_index_file, myset):
     trace(f'Writing & compressing index file : {my_index_file}')
     with bz2.BZ2File(my_index_file + '.pbz2', 'w') as f:
         pickle.dump(myset, f)
 
-def searchWithWildcards(my_index_file, mySearch, output_file):
+
+async def searchWithWildcards(my_index_file, mySearch, output_file):
     i = 0
     st = time.time()
     if output_file != '':
-        with open(output_file, 'w') as f:
-            print(f"La sortie est dirigée vers le fichier {output_file}")
-            f.write('filename;complete_filename;size(kb)\n')
-            for r in findFilesWithName(my_index_file, mySearch):
-
-                # Récupère des infos sur le fichier  : ça ralenti un peu
-                try:
-                    f.write(
-                        f'{r.split(os.path.sep)[-1]};{r};{os.stat(r).st_size / (1024):.2f}\n')
-                except FileNotFoundError:
-                    # Sur des chemins trop longs, windows ne retrouve pas le fichier
-                    f.write(f'{r.split(os.path.sep)[-1]};0\n')
-                i += 1
+        i = await export_to_file(my_index_file, mySearch, output_file)
     else:
-        # FIXME très très moche : il faut utiliser stdout pour changer la sortie standard !
-        for r in findFilesWithName(my_index_file, mySearch):
-
-            # Récupère des infos sur le fichier  : ça ralenti un peu
-            try:
-                print(
-                    f'{r.split(os.path.sep)[-1]};{os.stat(r).st_size / (1024):.2f}')
-            except FileNotFoundError:
-                # Sur des chemins trop longs, windows ne retrouve pas le fichier
-                print(f'{r.split(os.path.sep)[-1]};0')
-            i += 1
+        i = await export_to_print(my_index_file, mySearch)
     ed = time.time()
-    trace(f'Terminé en {(ed-st):.2f} secondes : {i} resultats')
+    trace(f'Recherche terminée en {(ed-st):.2f} secondes : {i} resultats')
+
+
+async def export_to_file(my_index_file, mySearch, output_file):
+    i = 0
+    results = []
+
+    for r in findFilesWithName(my_index_file, mySearch):
+        # Récupère des infos sur le fichier  : ça ralenti un peu
+        r = await generate_file_with_size(r)
+        results.append(r)
+        i += 1
+
+    with open(output_file, 'w') as f:
+        trace(f"La sortie est dirigée vers le fichier {output_file}")
+        f.write('filename;complete_filename;size(kb)\n')
+        f.writelines([s for s in results])
+    return i
+
+
+async def export_to_print(my_index_file, mySearch):
+    tasks = []
+    i = 0
+    for r in findFilesWithName(my_index_file, mySearch):
+        # Récupère des infos sur le fichier  : ça ralenti un peu
+        tasks.append(asyncio.ensure_future(generate_file_with_size(r)))
+        i += 1
+    await asyncio.gather(*tasks, return_exceptions=True)
+    return i
+
+
+async def generate_file_with_size(r):
+    result = ""
+    try:
+        size = await get_file_size(r)
+        result = f'{r.split(os.path.sep)[-1]};{r};{ size / (1024):.2f}\n'
+    except FileNotFoundError:
+        # Sur des chemins trop longs, windows ne retrouve pas le fichier
+        result = f'{r.split(os.path.sep)[-1]};{r};0'
+    # trace(result)
+    return result
+
+
+async def get_file_size(f):
+    s = os.stat(f).st_size
+    return s
+
 
 def findFilesWithName(my_index_file, mysearch):
     trace(f"Starting findFilesWithName with search : {mysearch}")
@@ -69,12 +97,14 @@ def findFilesWithName(my_index_file, mysearch):
         if fnmatch.fnmatch(item.split(os.path.sep)[-1], mysearch):
             yield item
 
+
 def findFilesInSet(my_set, my_search):
     for item in my_set:
         # File Name match : permet d'utiliser des * ou ? (plus simple que des regexp)
-        #For now it is case sensitive
+        # For now it is case sensitive
         if fnmatch.fnmatch(item.split(os.path.sep)[-1], my_search):
             yield item
+
 
 def read_index_file(my_index_file):
     trace(f'Uncompressing & Reading index file : {my_index_file}')
