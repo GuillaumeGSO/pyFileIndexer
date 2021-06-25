@@ -1,3 +1,4 @@
+import threading
 from guppy import hpy
 import time
 import os
@@ -6,7 +7,8 @@ import pickle
 import bz2
 import fnmatch
 from utils import trace
-import asyncio
+import concurrent.futures
+import queue
 
 
 def parseDirectory(index_file_name, dirName):
@@ -34,24 +36,24 @@ def write_index_file(my_index_file, myset):
         pickle.dump(myset, f)
 
 
-async def searchWithWildcards(my_index_file, mySearch, output_file):
+def searchWithWildcards(my_index_file, mySearch, output_file):
     i = 0
     st = time.time()
     if output_file != '':
-        i = await export_to_file(my_index_file, mySearch, output_file)
+        i = export_to_file(my_index_file, mySearch, output_file)
     else:
-        i = await export_to_print(my_index_file, mySearch)
+        i = export_to_print(my_index_file, mySearch)
     ed = time.time()
     trace(f'Recherche terminée en {(ed-st):.2f} secondes : {i} resultats')
 
 
-async def export_to_file(my_index_file, mySearch, output_file):
+def export_to_file(my_index_file, mySearch, output_file):
     i = 0
     results = []
 
     for r in findFilesWithName(my_index_file, mySearch):
         # Récupère des infos sur le fichier  : ça ralenti un peu
-        r = await generate_file_with_size(r)
+        r = generate_file_with_size(r)
         results.append(r)
         i += 1
 
@@ -62,30 +64,51 @@ async def export_to_file(my_index_file, mySearch, output_file):
     return i
 
 
-async def export_to_print(my_index_file, mySearch):
-    tasks = []
-    i = 0
-    for r in findFilesWithName(my_index_file, mySearch):
-        # Récupère des infos sur le fichier  : ça ralenti un peu
-        tasks.append(asyncio.ensure_future(generate_file_with_size(r)))
-        i += 1
-    await asyncio.gather(*tasks, return_exceptions=True)
+def worker(q):
+    while True:
+        item = q.get()
+        if item is None:
+            break
+        generate_file_with_size(item)
+        q.task_done()
+
+def export_to_print(my_index_file, mySearch):
+    q = queue.Queue()
+    for f in findFilesWithName(my_index_file, mySearch):
+        q.put(f)
+    i = q.qsize()
+
+    threads = []
+    for _ in range(10):
+        t = threading.Thread(target=worker, args=(q,))
+        t.start()
+        threads.append(t)
+    
+    q.join()
+    
+    for _ in range(10):
+        q.put(None)
+    
+    for t in threads:
+        t.join()
+
     return i
 
 
-async def generate_file_with_size(r):
+
+def generate_file_with_size(r):
     result = ""
     try:
-        size = await get_file_size(r)
+        size = get_file_size(r)
         result = f'{r.split(os.path.sep)[-1]};{r};{ size / (1024):.2f}\n'
     except FileNotFoundError:
         # Sur des chemins trop longs, windows ne retrouve pas le fichier
         result = f'{r.split(os.path.sep)[-1]};{r};0'
-    # trace(result)
+    trace(result)
     return result
 
 
-async def get_file_size(f):
+def get_file_size(f):
     s = os.stat(f).st_size
     return s
 
