@@ -7,11 +7,9 @@ from File_dir.file_parser import findFilesInSet
 import bz2
 import pickle
 
+__SEARCHING__ = False
 __INTERRUPT__ = False
-def get_interrupt():
-    return  __INTERRUPT__
-def set_interrupt(bool):
-    __INTERRUPT__ = bool
+
 
 def read_index_file(my_index_file):
     data = bz2.BZ2File(my_index_file + '.pbz2', 'rb')
@@ -38,21 +36,25 @@ async def background():
     search = ''
     while True:
         tirage = random.randint(2, 20000000000)
-        print(tirage)
+        # print(tirage)
         window['-TEMP-'].update(tirage)
         if window['-INPUT-'].get() != search:
             search = window['-INPUT-'].get()
             print(search)
+
             for r in findFilesInSet(my_set, search):
-                if get_interrupt():
-                    set_interrupt(False)
+                global __SEARCHING__
+                global __INTERRUPT__
+                if __SEARCHING__ and __INTERRUPT__:
+                    __INTERRUPT__ = False
                     break
+                __SEARCHING__ = True
                 lst = window['-RESULT-'].get_list_values()
                 lst.append(r)
                 window['-RESULT-'].update(lst)
                 window['-NB-'].update(len(lst))
                 await asyncio.sleep(0.001)
-
+        __SEARCHING__ = False
         await asyncio.sleep(0.001)
 
 
@@ -67,7 +69,10 @@ async def ui():
             if last_search != values['-INPUT-']:
                 window['-RESULT-'].update([])
                 last_search = values['-INPUT-']
-                set_interrupt(True)
+                global __INTERRUPT__
+                global __SEARCHING__
+                if __SEARCHING__:
+                    __INTERRUPT__ = True
         elif event == '-RESULT-':
             file_clicked = values['-RESULT-'][0]
             os.startfile(file_clicked)
