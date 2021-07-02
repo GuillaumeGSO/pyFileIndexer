@@ -57,9 +57,10 @@ async def background():
                     window['-RESULT-'].update(lst)
                     window['-NB-'].update(len(lst))
                 await asyncio.sleep(0)
-        __SEARCHING__ = False
-        window['-RESULT-'].update(lst)
-        window['-NB-'].update(len(lst))
+            __SEARCHING__ = False
+            __INTERRUPT__= False
+            window['-RESULT-'].update(lst)
+            window['-NB-'].update(len(lst))
         await asyncio.sleep(0.001)
 
 
