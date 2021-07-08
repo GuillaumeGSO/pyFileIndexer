@@ -1,5 +1,4 @@
 import threading
-from guppy import hpy
 import time
 import os
 import File_dir
@@ -11,7 +10,6 @@ import queue
 
 
 def parseDirectory(index_file_name, dirName):
-    h = hpy()
     # Get the list of all files in directory tree at given path
     st = time.time()
     setOfFiles = set()
@@ -25,8 +23,6 @@ def parseDirectory(index_file_name, dirName):
     # save the set into a pickle
     write_index_file(index_file_name, setOfFiles)
 
-    # Print memory usage
-    trace(h.heap())
 
 
 def write_index_file(my_index_file, myset):
@@ -62,7 +58,6 @@ def export_to_file(my_index_file, mySearch, output_file):
         f.writelines([s for s in results])
     return i
 
-
 def worker(q):
     while True:
         item = q.get()
@@ -92,8 +87,6 @@ def export_to_print(my_index_file, mySearch):
         t.join()
 
     return i
-
-
 
 def generate_file_with_size(r):
     result = ""

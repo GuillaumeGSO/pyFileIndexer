@@ -1,6 +1,5 @@
 import sys
 import getopt
-from File_dir.GUI import construct_interface
 from File_dir.file_parser import parseDirectory, searchWithWildcards
 
 VERBOSE = False
@@ -36,7 +35,6 @@ def main():
             (ignoré si pas en mode recherche)
     '''
     
-    INTERACTIF_MODE = True
     PATH_NAME = ''
     INDEX_FILE_NAME = ''
     FIND_STRING = ''
@@ -75,36 +73,30 @@ def main():
             OUTPUT_FILE = current_value
 
     # Appliquer les règles de fonctionnement le plus simplement possible
-    if not INTERACTIF_MODE:
-        # Il faut au moins choisir un mode : indexation ou recherche
-        if PATH_NAME == '' and FIND_STRING == '':
-            print(__doc__)
-            print("Erreur de syntaxe : ni indexation ni recherche demandée")
-            sys.exit(2)
+    
+    # Il faut au moins choisir un mode : indexation ou recherche
+    if PATH_NAME == '' and FIND_STRING == '':
+        print(__doc__)
+        print("Erreur de syntaxe : ni indexation ni recherche demandée")
+        sys.exit(2)
 
-        # indexation et recherche incompatibles
-        if PATH_NAME != '' and FIND_STRING != '':
-            print(__doc__)
-            print("<pathname> ne peut pas être utiliser en même temps que <search>")
-            sys.exit(2)
+    # indexation et recherche incompatibles
+    if PATH_NAME != '' and FIND_STRING != '':
+        print(__doc__)
+        print("<pathname> ne peut pas être utiliser en même temps que <search>")
+        sys.exit(2)
 
-        # indexation a besoin d'un chemin
-        if INDEX_FILE_NAME != '' and PATH_NAME == '' and FIND_STRING == '':
-            print(__doc__)
-            print("<pathname> obligatoire si demande d'indexation")
-            sys.exit(2)
+    # indexation a besoin d'un chemin
+    if INDEX_FILE_NAME != '' and PATH_NAME == '' and FIND_STRING == '':
+        print(__doc__)
+        print("<pathname> obligatoire si demande d'indexation")
+        sys.exit(2)
 
-        # Recherche demandée sans fichier d'index
-        if INDEX_FILE_NAME == '':
-            print(__doc__)
-            print("<indexfilename> obligatoire pour lancer une recherche")
-            sys.exit(2)
-
-    # Lancement interface graphique
-    if INTERACTIF_MODE:
-        #TODO get the index file name in the args or prompt for it (GUI)
-        construct_interface()
-        sys.exit(1)
+    # Recherche demandée sans fichier d'index
+    if INDEX_FILE_NAME == '':
+        print(__doc__)
+        print("<indexfilename> obligatoire pour lancer une recherche")
+        sys.exit(2)
 
     # Lancement de l'indexation
     if INDEX_FILE_NAME != '' and PATH_NAME != '':
