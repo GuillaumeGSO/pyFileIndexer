@@ -1,46 +1,83 @@
 import PySimpleGUI as sg
-from File_dir.file_parser import findFilesInSet
-import os
+from File_dir.file_parser import findFilesInSet, read_index_file
+import os, sys
+import asyncio
+
+__SEARCHING__ = False
+__INTERRUPT__ = False
+lst = list()
+my_set = read_index_file("index")
+layout = [
+    [sg.InputText(key="-INPUT-", enable_events=True),
+     sg.Text(len(lst), size=(10, 1), key="-NB-")],
+    [sg.Listbox(values=lst, size=(140, 30),
+                key="-RESULT-", tooltip="double click to open", bind_return_key=True), ],
+    [sg.Exit()]
+]
+
+window = sg.Window('Py Simple Indexer', layout, finalize=True)
+
+async def wait_list():
+    await asyncio.wait([background(), ui()])
+
+def construct_interface():
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(wait_list())
+    loop.close()
 
 
-def construct_interface(my_set):
-    # FIXME ask the user for an index file
-    # TODO use the provided index file in command line (have to add a new interactive mode)
-    lst = list()
-    sg.theme('Dark Red 1')   # Add a little color to your windows
-    # All the stuff inside your window. This is the PSG magic code compactor...
-
-    # TODO make this a little prettier
-    layout = [
-        [sg.InputText(key="-INPUT-", enable_events=True),
-         sg.Text(len(lst), size=(10, 1), key="-NB-")],
-        [sg.Listbox(values=lst, size=(140, 30),
-                    key="-RESULT-", tooltip="double click to open", bind_return_key=True), ],
-        [sg.Exit()]
-    ]
-
-    # Create the Window
-    window = sg.Window('Py Simple Indexer', layout, finalize=True)
-    window['-INPUT-'].update('*')
-    update_list(my_set, '*', window)
+async def ui():
+    last_search = ''
+    global __INTERRUPT__
+    global __SEARCHING__
     # Event Loop to process "events"
     while True:
-        event, values = window.read()
+        event, values = window.read(timeout=1)
         if event in (sg.WIN_CLOSED, 'Exit'):
-            break
+            sys.exit()
         elif event == '-INPUT-':
-            if len(values['-INPUT-']) >= 5:
-                update_list(my_set, values['-INPUT-'], window)
+            if last_search != values['-INPUT-']:
+                window['-RESULT-'].update([])
+                last_search = values['-INPUT-']
+                if __SEARCHING__:
+                    __INTERRUPT__ = True
         elif event == '-RESULT-':
             file_clicked = values['-RESULT-'][0]
+            if __SEARCHING__:
+                    __INTERRUPT__ = True
             os.startfile(file_clicked)
+        elif event == '__TIMEOUT__':
+            pass
         else:
             print(event, values)
+        await asyncio.sleep(0)
 
-    window.close()
 
-def update_list(my_set, search,  window):
-    lst = list(findFilesInSet(my_set, search))
-    window['-NB-'].update(len(lst))
-    # TODO make this async to avoid stopping the UI while waiting for long lists
-    window['-RESULT-'].update(lst)
+async def background():
+    search = ''
+    while True:
+        if window['-INPUT-'].get() != search:
+            search = window['-INPUT-'].get()
+            print(search)
+            lst.clear()
+            window['-NB-'].update(0)
+            i = 0
+            for r in findFilesInSet(my_set, search):
+                i += 1
+                lst.append(r)
+                global __SEARCHING__
+                global __INTERRUPT__
+                if __SEARCHING__ and __INTERRUPT__:
+                    __INTERRUPT__ = False
+                    break
+                __SEARCHING__ = True
+                if i % 100 == 0:
+                    window['-RESULT-'].update(lst)
+                    window['-NB-'].update(len(lst))
+                await asyncio.sleep(0)
+            __SEARCHING__ = False
+            __INTERRUPT__= False
+            window['-RESULT-'].update(lst)
+            window['-NB-'].update(len(lst))
+        await asyncio.sleep(0.001)
+

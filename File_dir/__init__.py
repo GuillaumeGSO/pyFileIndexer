@@ -1,8 +1,9 @@
 import sys
 import getopt
 from File_dir.GUI import construct_interface
-from File_dir.file_parser import parseDirectory, searchWithWildcards, read_index_file
-from utils import trace
+from File_dir.file_parser import parseDirectory, searchWithWildcards
+
+VERBOSE = False
 
 def main():
     '''
@@ -34,8 +35,7 @@ def main():
     -o ou --output <ouputfilename>: écrire le résultat de la recherche dans le fichier <ouputfilename>
             (ignoré si pas en mode recherche)
     '''
-    global VERBOSE
-    VERBOSE = False
+    
     INTERACTIF_MODE = True
     PATH_NAME = ''
     INDEX_FILE_NAME = ''
@@ -103,7 +103,7 @@ def main():
     # Lancement interface graphique
     if INTERACTIF_MODE:
         #TODO get the index file name in the args or prompt for it (GUI)
-        construct_interface(read_index_file("index"))
+        construct_interface()
         sys.exit(1)
 
     # Lancement de l'indexation

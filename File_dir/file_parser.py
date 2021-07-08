@@ -7,7 +7,7 @@ import pickle
 import bz2
 import fnmatch
 from utils import trace
-import concurrent.futures
+
 import queue
 
 
