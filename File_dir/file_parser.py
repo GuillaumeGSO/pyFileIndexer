@@ -6,7 +6,6 @@ import File_dir
 import pickle
 import bz2
 import fnmatch
-from utils import trace
 
 import queue
 
@@ -135,3 +134,6 @@ def read_index_file(my_index_file):
     myset = pickle.load(data)
     trace(f'Return un set de longueur : {len(myset)}')
     return myset
+
+def trace(trc):
+    print(trc)

@@ -127,3 +127,6 @@ def main():
             sys.exit(2)
 
 
+def trace(trc):
+    if VERBOSE:
+        print(trc)
