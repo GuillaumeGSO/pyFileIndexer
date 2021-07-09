@@ -7,7 +7,7 @@ This program is :
 
 
 My comments in french for a fresh start
-- [ x ] TODO : everything in english
+- [x] TODO : everything in english
 - [ ] TODO : cleaner code about --output options
 - [ ] TODO : code separation between main, interface, index file handling...
 - [ ] TODO : add interactive mode if index file or path name not provided ?
@@ -16,12 +16,12 @@ My comments in french for a fresh start
 ## Exemple : 
 
 1 - indexing my entire C drive :
->>python FileIndexer.py -index "lecteurC" -path "c:\"
+>python FileIndexer.py -index "lecteurC" -path "c:\"
 
 The index file will be generated as "lecteurC.pbz2"
 
 2 - search all log files in my C drive :
->>python pyFileIndexer.py -find "*.log" -i "lecteurC"
+>python pyFileIndexer.py -find "*.log" -i "lecteurC"
 
 The <indexfilename> file must be "lecteurC.pbz2"
 
@@ -30,13 +30,13 @@ The <indexfilename> file must be "lecteurC.pbz2"
  * -h ou --help : displays help
  * -v ou --verbose : displays more information on the standard output
 
-### Mode indexation : 2 paramètres obligatoires
+### Indexation mode : 2 mandatories parameters
  * -p ou --path <pathname>: path to index
  * -i ou --index <indexfilename> : start indexing <pathname> et write the index file in <indexfilename>
 
-### Mode recherche : 2 paramètres obligatoires *****
+### search mode : 2 mandatories parameters
 * -f ou --find <search>: find all relevant files into <indexfilename> with name or/and wildcards (? or * only) :
        ** *.xls : all Excel files
        ** *202?.log : all .log files like fic2020.log, param2021.log, etc 
 * -i ou --index <indexfilename> : mandatory index file name (for indexing or searching)
-* -o ou --output <ouputfilename>: output file name with ; separated
+* -o ou --output <ouputfilename> : output file name with ; separated (optional)
