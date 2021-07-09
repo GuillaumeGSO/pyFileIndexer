@@ -1,7 +1,7 @@
 import threading
 import time
 import os
-import File_dir
+import File_Indexer
 import pickle
 import bz2
 import fnmatch
@@ -17,7 +17,7 @@ def parseDirectory(index_file_name, dirName):
         setOfFiles.update(set([os.path.join(dirpath, file)
                           for file in filenames]))
     ed = time.time()
-    File_dir.trace(
+    File_Indexer.trace(
         f'Terminé en {(ed-st):.2f} secondes : {len(setOfFiles)} fichiers')
 
     # save the set into a pickle
@@ -26,7 +26,7 @@ def parseDirectory(index_file_name, dirName):
 
 
 def write_index_file(my_index_file, myset):
-    trace(f'Writing & compressing index file : {my_index_file}')
+    File_Indexer.trace(f'Writing & compressing index file : {my_index_file}')
     with bz2.BZ2File(my_index_file + '.pbz2', 'w') as f:
         pickle.dump(myset, f)
 
@@ -39,7 +39,7 @@ def searchWithWildcards(my_index_file, mySearch, output_file):
     else:
         i = export_to_print(my_index_file, mySearch)
     ed = time.time()
-    trace(f'Recherche terminée en {(ed-st):.2f} secondes : {i} resultats')
+    File_Indexer.trace(f'Recherche terminée en {(ed-st):.2f} secondes : {i} resultats')
 
 
 def export_to_file(my_index_file, mySearch, output_file):
@@ -53,7 +53,7 @@ def export_to_file(my_index_file, mySearch, output_file):
         i += 1
 
     with open(output_file, 'w') as f:
-        trace(f"La sortie est dirigée vers le fichier {output_file}")
+        File_Indexer.trace(f"La sortie est dirigée vers le fichier {output_file}")
         f.write('filename;complete_filename;size(kb)\n')
         f.writelines([s for s in results])
     return i
@@ -95,8 +95,8 @@ def generate_file_with_size(r):
         result = f'{r.split(os.path.sep)[-1]};{r};{ size / (1024):.2f}\n'
     except FileNotFoundError:
         # Sur des chemins trop longs, windows ne retrouve pas le fichier
-        result = f'{r.split(os.path.sep)[-1]};{r};0'
-    trace(result)
+        result = f'{r.split(os.path.sep)[-1]};{r};0\n'
+    File_Indexer.trace(result)
     return result
 
 
@@ -106,7 +106,7 @@ def get_file_size(f):
 
 
 def findFilesWithName(my_index_file, mysearch):
-    trace(f"Starting findFilesWithName with search : {mysearch}")
+    File_Indexer.trace(f"Starting findFilesWithName with search : {mysearch}")
     for item in read_index_file(my_index_file):
         # File Name match : permet d'utiliser des * ou ? (plus simple que des regexp)
         if fnmatch.fnmatch(item.split(os.path.sep)[-1], mysearch):
@@ -122,11 +122,9 @@ def findFilesInSet(my_set, my_search):
 
 
 def read_index_file(my_index_file):
-    trace(f'Uncompressing & Reading index file : {my_index_file}')
+    File_Indexer.trace(f'Uncompressing & Reading index file : {my_index_file}')
     data = bz2.BZ2File(my_index_file + '.pbz2', 'rb')
     myset = pickle.load(data)
-    trace(f'Return un set de longueur : {len(myset)}')
+    File_Indexer.trace(f'Return un set de longueur : {len(myset)}')
     return myset
 
-def trace(trc):
-    print(trc)

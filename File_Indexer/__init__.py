@@ -1,7 +1,8 @@
 import sys
 import getopt
-from File_dir.file_parser import parseDirectory, searchWithWildcards
+from .file_parser import searchWithWildcards
 
+global VERBOSE
 VERBOSE = False
 
 def main():
@@ -58,6 +59,7 @@ def main():
         if current_argument in ("-v", "--verbose"):
             print("Enabling verbose mode")
             VERBOSE = True
+            print(VERBOSE)
         elif current_argument in ("-h", "--help"):
             print(__doc__)
         elif current_argument in ("-p", "--pathname"):
@@ -103,7 +105,7 @@ def main():
         if OUTPUT_FILE != '':
             print("Warning : <output> est ignoré en mode indexation")
         try:
-            parseDirectory(INDEX_FILE_NAME, PATH_NAME)
+            file_parser.parseDirectory(INDEX_FILE_NAME, PATH_NAME)
         except RuntimeError as err:
             print("Erreur pendant l'indexation...-v pour visualiser")
             trace(str(err))
@@ -120,5 +122,7 @@ def main():
 
 
 def trace(trc):
+    global VERBOSE
+    print(VERBOSE)
     if VERBOSE:
         print(trc)
