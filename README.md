@@ -1,5 +1,6 @@
 # pyFileIndexer
 [![Pylint](https://github.com/GuillaumeGSO/pyFileIndexer/actions/workflows/pylint.yml/badge.svg)](https://github.com/GuillaumeGSO/pyFileIndexer/actions/workflows/pylint.yml)
+
 This program is : 
 - a simple tool that index filenames on a directory and its subdirectories
 - a command line search tool that can :
