@@ -1,6 +1,6 @@
 import sys
 import getopt
-from .file_parser import searchWithWildcards
+from .file_parser import search_with_wildcards
 
 global VERBOSE
 VERBOSE = False
@@ -105,7 +105,7 @@ def main():
         if OUTPUT_FILE != '':
             print("Warning : <output> est ignoré en mode indexation")
         try:
-            file_parser.parseDirectory(INDEX_FILE_NAME, PATH_NAME)
+            file_parser.parse_directory(INDEX_FILE_NAME, PATH_NAME)
         except RuntimeError as err:
             print("Erreur pendant l'indexation...-v pour visualiser")
             trace(str(err))
@@ -114,7 +114,7 @@ def main():
     # Lancement recherche
     if INDEX_FILE_NAME != '' and FIND_STRING != '':
         try:
-            searchWithWildcards(INDEX_FILE_NAME, FIND_STRING, OUTPUT_FILE)
+            search_with_wildcards(INDEX_FILE_NAME, FIND_STRING, OUTPUT_FILE)
         except RuntimeError as err:
             print("Erreur pendant la recherche... -v pour visualiser")
             trace(str(err))

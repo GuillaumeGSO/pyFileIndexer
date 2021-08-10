@@ -1,111 +1,133 @@
 import threading
 import time
 import os
-import File_Indexer
+import queue
 import pickle
 import bz2
 import fnmatch
+import File_Indexer
 
-import queue
 
-
-def parseDirectory(index_file_name, dirName):
-    # Get the list of all files in directory tree at given path
-    st = time.time()
-    setOfFiles = set()
-    for (dirpath, _, filenames) in os.walk(dirName):
-        setOfFiles.update(set([os.path.join(dirpath, file)
-                          for file in filenames]))
-    ed = time.time()
+def parse_directory(index_file_name, dir_name):
+    """
+    Get the list of all files in directory tree at given path
+    """
+    start = time.time()
+    set_of_files = set()
+    for (dirpath, _, filenames) in os.walk(dir_name):
+        set_of_files.update({os.path.join(dirpath, file) for file in filenames})
+    end = time.time()
     File_Indexer.trace(
-        f'Terminé en {(ed-st):.2f} secondes : {len(setOfFiles)} fichiers')
+        f'Terminé en {(end-start):.2f} secondes : {len(set_of_files)} fichiers')
 
     # save the set into a pickle
-    write_index_file(index_file_name, setOfFiles)
-
+    write_index_file(index_file_name, set_of_files)
 
 
 def write_index_file(my_index_file, myset):
+    """
+    Create or replace the index files with the content of the set
+    """
     File_Indexer.trace(f'Writing & compressing index file : {my_index_file}')
-    with bz2.BZ2File(my_index_file + '.pbz2', 'w') as f:
-        pickle.dump(myset, f)
+    with bz2.BZ2File(my_index_file + '.pbz2', 'w') as file:
+        pickle.dump(myset, file)
 
 
-def searchWithWildcards(my_index_file, mySearch, output_file):
+def search_with_wildcards(my_index_file, mySearch, output_file):
     i = 0
-    st = time.time()
+    start = time.time()
     if output_file != '':
         i = export_to_file(my_index_file, mySearch, output_file)
     else:
         i = export_to_print(my_index_file, mySearch)
-    ed = time.time()
-    File_Indexer.trace(f'Recherche terminée en {(ed-st):.2f} secondes : {i} resultats')
+    end = time.time()
+    File_Indexer.trace(
+        f'Recherche terminée en {(end-start):.2f} secondes : {i} resultats')
 
 
-def export_to_file(my_index_file, mySearch, output_file):
+def export_to_file(my_index_file, my_search, output_file):
+    """
+    Export results to a csv file
+    """
     i = 0
     results = []
 
-    for r in findFilesWithName(my_index_file, mySearch):
+    for file in find_files_with_name(my_index_file, my_search):
         # Récupère des infos sur le fichier  : ça ralenti un peu
-        r = generate_file_with_size(r)
-        results.append(r)
+        results.append(generate_file_with_size(file))
         i += 1
 
-    with open(output_file, 'w') as f:
-        File_Indexer.trace(f"La sortie est dirigée vers le fichier {output_file}")
-        f.write('filename;complete_filename;size(kb)\n')
-        f.writelines([s for s in results])
+    with open(output_file, 'w') as file:
+        File_Indexer.trace(
+            f"La sortie est dirigée vers le fichier {output_file}")
+        file.write('filename;complete_filename;size(kb)\n')
+        file.writelines([s for s in results])
     return i
 
-def worker(q):
+
+def worker(queued):
+    """
+    initialize a worker to retrieve a file size
+    """
     while True:
-        item = q.get()
+        item = queued.get()
         if item is None:
             break
         generate_file_with_size(item)
-        q.task_done()
+        queued.task_done()
+
 
 def export_to_print(my_index_file, mySearch):
-    q = queue.Queue()
-    for f in findFilesWithName(my_index_file, mySearch):
-        q.put(f)
-    i = q.qsize()
+    """
+    Export to console with file size
+    """
+    my_queue = queue.Queue()
+    for file in find_files_with_name(my_index_file, mySearch):
+        my_queue.put(file)
+    i = my_queue.qsize()
 
     threads = []
     for _ in range(10):
-        t = threading.Thread(target=worker, args=(q,))
-        t.start()
-        threads.append(t)
-    
-    q.join()
-    
+        thread = threading.Thread(target=worker, args=(my_queue,))
+        thread.start()
+        threads.append(thread)
+    my_queue.join()
+
     for _ in range(10):
-        q.put(None)
-    
-    for t in threads:
-        t.join()
+        my_queue.put(None)
+
+    for thread in threads:
+        thread.join()
 
     return i
 
-def generate_file_with_size(r):
+
+def generate_file_with_size(file_name):
+    """
+    Generate file with size
+    """
     result = ""
     try:
-        size = get_file_size(r)
-        result = f'{r.split(os.path.sep)[-1]};{r};{ size / (1024):.2f}\n'
+        size = get_file_size(file_name)
+        result = f'{file_name.split(os.path.sep)[-1]};{file_name};{ size / (1024):.2f}\n'
     except FileNotFoundError:
-        # Sur des chemins trop longs, windows ne retrouve pas le fichier
-        result = f'{r.split(os.path.sep)[-1]};{r};0\n'
+        # Sometimes Windows doesn't find a file if the path is too long
+        result = f'{file_name.split(os.path.sep)[-1]};{file_name};0\n'
     File_Indexer.trace(result)
     return result
 
 
-def get_file_size(f):
-    s = os.stat(f).st_size
-    return s
+def get_file_size(file):
+    """
+    returns the file size
+    """
+    return os.stat(file).st_size
 
 
-def findFilesWithName(my_index_file, mysearch):
+def find_files_with_name(my_index_file, mysearch):
+    """
+    find files with name
+    """
     File_Indexer.trace(f"Starting findFilesWithName with search : {mysearch}")
     for item in read_index_file(my_index_file):
         # File Name match : permet d'utiliser des * ou ? (plus simple que des regexp)
@@ -113,7 +135,10 @@ def findFilesWithName(my_index_file, mysearch):
             yield item
 
 
-def findFilesInSet(my_set, my_search):
+def find_files_in_set(my_set, my_search):
+    """
+    find files (again ?!)
+    """
     for item in my_set:
         # File Name match : permet d'utiliser des * ou ? (plus simple que des regexp)
         # For now it is case sensitive
@@ -122,9 +147,11 @@ def findFilesInSet(my_set, my_search):
 
 
 def read_index_file(my_index_file):
+    """
+    Uncompress and reads the index file
+    """
     File_Indexer.trace(f'Uncompressing & Reading index file : {my_index_file}')
     data = bz2.BZ2File(my_index_file + '.pbz2', 'rb')
     myset = pickle.load(data)
-    File_Indexer.trace(f'Return un set de longueur : {len(myset)}')
+    File_Indexer.trace(f'Set length returned : {len(myset)}')
     return myset
-
