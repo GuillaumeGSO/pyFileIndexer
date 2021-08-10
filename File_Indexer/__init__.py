@@ -1,3 +1,6 @@
+"""
+Indexer module with search tool
+"""
 import sys
 import getopt
 from .file_parser import search_with_wildcards
@@ -5,8 +8,9 @@ from .file_parser import search_with_wildcards
 global VERBOSE
 VERBOSE = False
 
+
 def main():
-    '''
+    """
     Indexation et recherche par wildcard (* et ?) sur des noms de fichiers
 
     Exemples : 
@@ -16,8 +20,6 @@ def main():
     2 - recherche tous les fichiers log
         >>python file_dir.py -find "*.log" -i "lecteurC"
         le fichier d'index lu doit se nommer lecteurC.pbz2
-    3 - ouvrir une interface graphique
-        >>python file_dir.py
 
     Usage : 
     -h ou --help : affiche l'aide
@@ -34,8 +36,8 @@ def main():
     -i ou --index <indexfilename> : utilise le fichier d'index <indexfilename> (obligatoire)
     -o ou --output <ouputfilename>: écrire le résultat de la recherche dans le fichier <ouputfilename>
             (ignoré si pas en mode recherche)
-    '''
-    
+    """
+
     PATH_NAME = ''
     INDEX_FILE_NAME = ''
     FIND_STRING = ''
@@ -64,18 +66,15 @@ def main():
             print(__doc__)
         elif current_argument in ("-p", "--pathname"):
             PATH_NAME = current_value
-            INTERACTIF_MODE = False
         elif current_argument in ("-i", "--index"):
             INDEX_FILE_NAME = current_value
-            INTERACTIF_MODE = False
         elif current_argument in ("-f", "--find"):
             FIND_STRING = current_value
-            INTERACTIF_MODE = False
         elif current_argument in ("-o", "--output"):
             OUTPUT_FILE = current_value
 
     # Appliquer les règles de fonctionnement le plus simplement possible
-    
+
     # Il faut au moins choisir un mode : indexation ou recherche
     if PATH_NAME == '' and FIND_STRING == '':
         print(__doc__)
@@ -122,6 +121,9 @@ def main():
 
 
 def trace(trc):
+    """
+    displays logs on console if verbose mode
+    """
     global VERBOSE
     if VERBOSE:
         print(trc)
