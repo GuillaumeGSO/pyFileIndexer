@@ -1,3 +1,6 @@
+"""
+File parser
+"""
 import threading
 import time
 import os
@@ -15,7 +18,8 @@ def parse_directory(index_file_name, dir_name):
     start = time.time()
     set_of_files = set()
     for (dirpath, _, filenames) in os.walk(dir_name):
-        set_of_files.update({os.path.join(dirpath, file) for file in filenames})
+        set_of_files.update({os.path.join(dirpath, file)
+                             for file in filenames})
     end = time.time()
     fileindexer.trace(
         f'Terminé en {(end-start):.2f} secondes : {len(set_of_files)} fichiers')
@@ -33,13 +37,16 @@ def write_index_file(my_index_file, myset):
         pickle.dump(myset, file)
 
 
-def search_with_wildcards(my_index_file, mySearch, output_file):
+def search_with_wildcards(my_index_file, my_search, output_file):
+    """
+    Search with wildcards
+    """
     i = 0
     start = time.time()
     if output_file != '':
-        i = export_to_file(my_index_file, mySearch, output_file)
+        i = export_to_file(my_index_file, my_search, output_file)
     else:
-        i = export_to_print(my_index_file, mySearch)
+        i = export_to_print(my_index_file, my_search)
     end = time.time()
     fileindexer.trace(
         f'Recherche terminée en {(end-start):.2f} secondes : {i} resultats')
@@ -61,7 +68,7 @@ def export_to_file(my_index_file, my_search, output_file):
         fileindexer.trace(
             f"La sortie est dirigée vers le fichier {output_file}")
         file.write('filename;complete_filename;size(kb)\n')
-        file.writelines([s for s in results])
+        file.writelines(results)
     return i
 
 
@@ -77,12 +84,12 @@ def worker(queued):
         queued.task_done()
 
 
-def export_to_print(my_index_file, mySearch):
+def export_to_print(my_index_file, my_search):
     """
     Export to console with file size
     """
     my_queue = queue.Queue()
-    for file in find_files_with_name(my_index_file, mySearch):
+    for file in find_files_with_name(my_index_file, my_search):
         my_queue.put(file)
     i = my_queue.qsize()
 
