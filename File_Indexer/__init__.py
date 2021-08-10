@@ -58,8 +58,8 @@ def main():
     for current_argument, current_value in arguments:
         if current_argument in ("-v", "--verbose"):
             print("Enabling verbose mode")
+            global VERBOSE
             VERBOSE = True
-            print(VERBOSE)
         elif current_argument in ("-h", "--help"):
             print(__doc__)
         elif current_argument in ("-p", "--pathname"):
@@ -123,6 +123,5 @@ def main():
 
 def trace(trc):
     global VERBOSE
-    print(VERBOSE)
     if VERBOSE:
         print(trc)
