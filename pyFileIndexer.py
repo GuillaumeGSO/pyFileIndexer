@@ -1,4 +1,4 @@
-from File_Indexer import main
+from fileindexer import main
 
 if __name__ == '__main__':
    main()

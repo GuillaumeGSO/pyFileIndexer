@@ -3,7 +3,7 @@ Indexer module with search tool
 """
 import sys
 import getopt
-from .file_parser import search_with_wildcards
+from fileindexer.fileparser import search_with_wildcards, parse_directory
 
 global VERBOSE
 VERBOSE = False
@@ -104,7 +104,7 @@ def main():
         if OUTPUT_FILE != '':
             print("Warning : <output> est ignoré en mode indexation")
         try:
-            file_parser.parse_directory(INDEX_FILE_NAME, PATH_NAME)
+            parse_directory(INDEX_FILE_NAME, PATH_NAME)
         except RuntimeError as err:
             print("Erreur pendant l'indexation...-v pour visualiser")
             trace(str(err))
