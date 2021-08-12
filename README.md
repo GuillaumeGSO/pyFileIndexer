@@ -1,5 +1,8 @@
 # pyFileIndexer
-[![Pylint](https://github.com/GuillaumeGSO/pyFileIndexer/actions/workflows/pylint.yml/badge.svg)](https://github.com/GuillaumeGSO/pyFileIndexer/actions/workflows/pylint.yml)
+[![Pylint](https://github.com/GuillaumeGSO/pyFileIndexer/actions/workflows/pylint.yml/badge.svg)]
+(https://github.com/GuillaumeGSO/pyFileIndexer/actions/workflows/pylint.yml)
+
+[![Python application](https://github.com/GuillaumeGSO/pyFileIndexer/actions/workflows/python-app.yml/badge.svg)](https://github.com/GuillaumeGSO/pyFileIndexer/actions/workflows/python-app.yml)
 
 This program is : 
 - a simple tool that index filenames on a directory and its subdirectories
