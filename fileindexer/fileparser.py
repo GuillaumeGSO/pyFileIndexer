@@ -22,9 +22,9 @@ def parse_directory(index_file_name, dir_name):
                              for file in filenames})
     end = time.time()
     fileindexer.trace(
-        f'Terminé en {(end-start):.2f} secondes : {len(set_of_files)} fichiers')
+        f'Finished in {(end-start):.2f} secondes : {len(set_of_files)} files indexed')
 
-    # save the set into a pickle
+    # save the set into a compressed pickle file
     write_index_file(index_file_name, set_of_files)
 
 
