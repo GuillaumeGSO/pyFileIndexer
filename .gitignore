@@ -2,3 +2,4 @@
 *.pbz2
 __pycache__
 pyfileindexer/
+.coverage
