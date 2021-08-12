@@ -1,6 +1,5 @@
 # pyFileIndexer
-[![Pylint](https://github.com/GuillaumeGSO/pyFileIndexer/actions/workflows/pylint.yml/badge.svg)]
-(https://github.com/GuillaumeGSO/pyFileIndexer/actions/workflows/pylint.yml)
+[![Pylint](https://github.com/GuillaumeGSO/pyFileIndexer/actions/workflows/pylint.yml/badge.svg)](https://github.com/GuillaumeGSO/pyFileIndexer/actions/workflows/pylint.yml)
 
 [![Python application](https://github.com/GuillaumeGSO/pyFileIndexer/actions/workflows/python-app.yml/badge.svg)](https://github.com/GuillaumeGSO/pyFileIndexer/actions/workflows/python-app.yml)
 
