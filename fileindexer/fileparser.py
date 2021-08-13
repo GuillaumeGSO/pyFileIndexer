@@ -131,24 +131,13 @@ def get_file_size(file):
     return os.stat(file).st_size
 
 
-def find_files_with_name(my_index_file, mysearch):
+def find_files_with_name(my_index_file, my_search):
     """
     find files with name
     """
-    fileindexer.trace(f"Starting findFilesWithName with search : {mysearch}")
+    fileindexer.trace(f"Starting findFilesWithName with search : {my_search}")
     for item in read_index_file(my_index_file):
-        # File Name match : permet d'utiliser des * ou ? (plus simple que des regexp)
-        if fnmatch.fnmatch(item.split(os.path.sep)[-1], mysearch):
-            yield item
-
-
-def find_files_in_set(my_set, my_search):
-    """
-    find files (again ?!)
-    """
-    for item in my_set:
-        # File Name match : permet d'utiliser des * ou ? (plus simple que des regexp)
-        # For now it is case sensitive
+        # File Name match : allow use of * ou ? wildcard (simpler than regexp)
         if fnmatch.fnmatch(item.split(os.path.sep)[-1], my_search):
             yield item
 
@@ -159,6 +148,6 @@ def read_index_file(my_index_file):
     """
     fileindexer.trace(f'Uncompressing & Reading index file : {my_index_file}')
     data = bz2.BZ2File(my_index_file + '.pbz2', 'rb')
-    myset = pickle.load(data)
-    fileindexer.trace(f'Set length returned : {len(myset)}')
-    return myset
+    my_set = pickle.load(data)
+    fileindexer.trace(f'Set length returned : {len(my_set)}')
+    return my_set
