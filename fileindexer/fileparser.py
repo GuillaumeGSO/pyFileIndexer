@@ -37,7 +37,7 @@ def write_index_file(my_index_file, myset):
         pickle.dump(myset, file)
 
 
-def search_with_wildcards(my_index_file, my_search, output_file):
+def search_with_wildcards(my_index_file, my_search, output_file=''):
     """
     Search with wildcards
     """

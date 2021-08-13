@@ -1,8 +1,11 @@
 import pytest
 import time
 import os
-from fileindexer.fileparser import  find_files_with_name, generate_file_with_size, parse_directory, read_index_file, write_index_file
+from fileindexer.fileparser import  find_files_with_name, generate_file_with_size, parse_directory, read_index_file, search_with_wildcards, write_index_file
 
+def test_parse_directory(tmp_path):
+    parse_directory(os.path.join(tmp_path, "test_test"), tmp_path)
+    assert os.path.isfile(os.path.join(tmp_path, "test_test.pbz2"))
 
 def test_write_index_file_case_new_file(tmp_path):
     """
@@ -35,6 +38,22 @@ def test_write_index_file_case_log(tmp_path, capsys):
     assert out == ''
     assert err == ''
 
+def test_search_with_wildcards_result_no_output(create_and_populate_search_file):
+    search_with_wildcards(create_and_populate_search_file, "abc.pdf")
+
+def test_search_with_wildcards_no_result_no_output(create_and_populate_search_file):
+    search_with_wildcards(create_and_populate_search_file, "xxx")
+
+def test_search_with_wildcards_result_output(create_and_populate_search_file, tmp_path):
+    search_with_wildcards(create_and_populate_search_file, "abc.pdf", os.path.join(tmp_path,"out.txt"))
+    assert os.path.isfile(os.path.join(tmp_path,"out.txt"))
+    #Should verify that file contains 2 lines
+
+def test_search_with_wildcards_no_result_output(create_and_populate_search_file, tmp_path):
+    search_with_wildcards(create_and_populate_search_file, "xxx", os.path.join(tmp_path,"out.txt"))
+    assert os.path.isfile(os.path.join(tmp_path,"out.txt"))
+    #Should verify that file contains only title line
+
 def test_read_index_file(create_and_populate_search_file):
     result = read_index_file(create_and_populate_search_file)
     assert len(result) == 5
@@ -54,9 +73,6 @@ def test_find_files_with_name_star(create_and_populate_search_file):
 def test_find_files_with_name_quest(create_and_populate_search_file):
     assert len(list(find_files_with_name(create_and_populate_search_file, "?bc.pdf"))) == 3
 
-def test_parse_directory(tmp_path):
-    parse_directory(os.path.join(tmp_path, "test_test"), tmp_path)
-    assert os.path.isfile(os.path.join(tmp_path, "test_test.pbz2"))
 
 def test_generate_file_with_size_existing(create_and_populate_search_file):
     #Testing if the created index file is read with size
