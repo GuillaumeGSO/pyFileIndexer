@@ -48,7 +48,7 @@ def test_find_files_with_name_star(create_and_populate_search_file):
     assert(len(list(find_files_with_name(create_and_populate_search_file, "*.pdf"))) == 3)
 
 def test_find_files_with_name_quest(create_and_populate_search_file):
-    assert(len(list(find_files_with_name(create_and_populate_search_file, "?bc.*"))) == 4)
+    assert(len(list(find_files_with_name(create_and_populate_search_file, "?bc.pdf"))) == 3)
 
 
 def test_parse_directory(tmp_path):
