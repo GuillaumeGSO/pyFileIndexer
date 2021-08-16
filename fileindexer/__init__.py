@@ -3,11 +3,7 @@ Indexer module with search tool
 """
 import sys
 import getopt
-from fileindexer.fileparser import search_with_wildcards, parse_directory
-
-global VERBOSE
-VERBOSE = False
-
+from .fileparser import search_with_wildcards, parse_directory, trace
 
 def main():
     """
@@ -45,6 +41,7 @@ def main():
     INDEX_FILE_NAME = ''
     FIND_STRING = ''
     OUTPUT_FILE = ''
+    VERBOSE = False
 
     full_cmd_arguments = sys.argv
     argument_list = full_cmd_arguments[1:]
@@ -63,7 +60,6 @@ def main():
     for current_argument, current_value in arguments:
         if current_argument in ("-v", "--verbose"):
             print("Enabling verbose mode")
-            global VERBOSE
             VERBOSE = True
         elif current_argument in ("-h", "--help"):
             print(__doc__)
@@ -107,26 +103,17 @@ def main():
         if OUTPUT_FILE != '':
             print("Warning : <output> est ignoré en mode indexation")
         try:
-            parse_directory(INDEX_FILE_NAME, PATH_NAME)
+            parse_directory(INDEX_FILE_NAME, PATH_NAME, VERBOSE)
         except RuntimeError as err:
             print("Erreur pendant l'indexation...-v pour visualiser")
-            trace(str(err))
+            trace(str(err), VERBOSE)
             sys.exit(2)
 
     # Lancement recherche
     if INDEX_FILE_NAME != '' and FIND_STRING != '':
         try:
-            search_with_wildcards(INDEX_FILE_NAME, FIND_STRING, OUTPUT_FILE)
+            search_with_wildcards(INDEX_FILE_NAME, FIND_STRING, OUTPUT_FILE, VERBOSE)
         except RuntimeError as err:
             print("Erreur pendant la recherche... -v pour visualiser")
-            trace(str(err))
+            trace(str(err), VERBOSE)
             sys.exit(2)
-
-
-def trace(trc):
-    """
-    displays logs on console if verbose mode
-    """
-    global VERBOSE
-    if VERBOSE:
-        print(trc)

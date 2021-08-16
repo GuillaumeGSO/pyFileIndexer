@@ -8,10 +8,17 @@ import queue
 import pickle
 import bz2
 import fnmatch
-from . import trace
+
+VERBOSE = True
+def trace(trc, verbose=False):
+    """
+    displays logs on console if verbose mode
+    """
+    if verbose:
+        print(trc)
 
 
-def parse_directory(index_file_name, dir_name):
+def parse_directory(index_file_name, dir_name, verbose = False):
     """
     Get the list of all files in directory tree at given path
     """
@@ -22,37 +29,37 @@ def parse_directory(index_file_name, dir_name):
                              for file in filenames})
     end = time.time()
     trace(
-        f'Finished in {(end-start):.2f} secondes : {len(set_of_files)} files indexed')
+        f'Finished in {(end-start):.2f} secondes : {len(set_of_files)} files indexed', verbose)
 
     # save the set into a compressed pickle file
-    write_index_file(index_file_name, set_of_files)
+    write_index_file(index_file_name, set_of_files, verbose)
 
 
-def write_index_file(my_index_file, myset):
+def write_index_file(my_index_file, myset, verbose = False):
     """
     Create or replace the index files with the content of the set
     """
-    trace(f'Writing & compressing index file : {my_index_file}')
+    trace(f'Writing & compressing index file : {my_index_file}', verbose)
     with bz2.BZ2File(my_index_file + '.pbz2', 'w') as file:
         pickle.dump(myset, file)
 
 
-def search_with_wildcards(my_index_file, my_search, output_file=''):
+def search_with_wildcards(my_index_file, my_search, output_file='', verbose = False):
     """
     Search with wildcards
     """
     i = 0
     start = time.time()
     if output_file != '':
-        i = export_to_file(my_index_file, my_search, output_file)
+        i = export_to_file(my_index_file, my_search, output_file, verbose)
     else:
-        i = export_to_print(my_index_file, my_search)
+        i = export_to_print(my_index_file, my_search, verbose)
     end = time.time()
     trace(
-        f'Recherche terminée en {(end-start):.2f} secondes : {i} resultats')
+        f'Recherche terminée en {(end-start):.2f} secondes : {i} resultats', verbose)
 
 
-def export_to_file(my_index_file, my_search, output_file):
+def export_to_file(my_index_file, my_search, output_file, verbose):
     """
     Export results to a csv file
     """
@@ -66,7 +73,7 @@ def export_to_file(my_index_file, my_search, output_file):
 
     with open(output_file, 'w') as file:
         trace(
-            f"La sortie est dirigée vers le fichier {output_file}")
+            f"La sortie est dirigée vers le fichier {output_file}", verbose)
         file.write('filename;complete_filename;size(kb)\n')
         file.writelines(results)
     return i
@@ -84,12 +91,12 @@ def worker(queued):
         queued.task_done()
 
 
-def export_to_print(my_index_file, my_search):
+def export_to_print(my_index_file, my_search, verbose = False):
     """
     Export to console with file size
     """
     my_queue = queue.Queue()
-    for file in find_files_with_name(my_index_file, my_search):
+    for file in find_files_with_name(my_index_file, my_search, verbose):
         my_queue.put(file)
     i = my_queue.qsize()
 
@@ -109,7 +116,7 @@ def export_to_print(my_index_file, my_search):
     return i
 
 
-def generate_file_with_size(file_name):
+def generate_file_with_size(file_name, verbose = False):
     """
     Generate file with size
     """
@@ -120,7 +127,7 @@ def generate_file_with_size(file_name):
     except FileNotFoundError:
         # Sometimes Windows doesn't find a file if the path is too long
         result = f'{file_name.split(os.path.sep)[-1]};{file_name};0\n'
-    trace(result)
+    trace(result, verbose)
     return result
 
 
@@ -131,23 +138,23 @@ def get_file_size(file):
     return os.stat(file).st_size
 
 
-def find_files_with_name(my_index_file, my_search):
+def find_files_with_name(my_index_file, my_search, verbose = False):
     """
     find files with name
     """
-    trace(f"Starting findFilesWithName with search : {my_search}")
-    for item in read_index_file(my_index_file):
+    trace(f"Starting findFilesWithName with search : {my_search}", verbose)
+    for item in read_index_file(my_index_file, verbose):
         # File Name match : allow use of * ou ? wildcard (simpler than regexp)
         if fnmatch.fnmatch(item.split(os.path.sep)[-1], my_search):
             yield item
 
 
-def read_index_file(my_index_file):
+def read_index_file(my_index_file, verbose = False):
     """
     Uncompress and reads the index file
     """
-    trace(f'Uncompressing & Reading index file : {my_index_file}')
+    trace(f'Uncompressing & Reading index file : {my_index_file}', verbose)
     data = bz2.BZ2File(my_index_file + '.pbz2', 'rb')
     my_set = pickle.load(data)
-    trace(f'Set length returned : {len(my_set)}')
+    trace(f'Set length returned : {len(my_set)}', verbose)
     return my_set
