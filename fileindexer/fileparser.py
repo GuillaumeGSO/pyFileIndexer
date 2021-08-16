@@ -35,13 +35,13 @@ def parse_directory(index_file_name, dir_name, verbose = False):
     write_index_file(index_file_name, set_of_files, verbose)
 
 
-def write_index_file(my_index_file, myset, verbose = False):
+def write_index_file(my_index_file, my_set, verbose = False):
     """
     Create or replace the index files with the content of the set
     """
     trace(f'Writing & compressing index file : {my_index_file}', verbose)
     with bz2.BZ2File(my_index_file + '.pbz2', 'w') as file:
-        pickle.dump(myset, file)
+        pickle.dump(my_set, file)
 
 
 def search_with_wildcards(my_index_file, my_search, output_file='', verbose = False):
@@ -56,7 +56,7 @@ def search_with_wildcards(my_index_file, my_search, output_file='', verbose = Fa
         i = export_to_print(my_index_file, my_search, verbose)
     end = time.time()
     trace(
-        f'Recherche terminée en {(end-start):.2f} secondes : {i} resultats', verbose)
+        f'Search done in {(end-start):.2f} secondes : {i} results', verbose)
 
 
 def export_to_file(my_index_file, my_search, output_file, verbose):
@@ -73,7 +73,7 @@ def export_to_file(my_index_file, my_search, output_file, verbose):
 
     with open(output_file, 'w') as file:
         trace(
-            f"La sortie est dirigée vers le fichier {output_file}", verbose)
+            f"Results are redirected vers {output_file} file", verbose)
         file.write('filename;complete_filename;size(kb)\n')
         file.writelines(results)
     return i
@@ -142,7 +142,7 @@ def find_files_with_name(my_index_file, my_search, verbose = False):
     """
     find files with name
     """
-    trace(f"Starting findFilesWithName with search : {my_search}", verbose)
+    trace(f"Starting search : {my_search}", verbose)
     for item in read_index_file(my_index_file, verbose):
         # File Name match : allow use of * ou ? wildcard (simpler than regexp)
         if fnmatch.fnmatch(item.split(os.path.sep)[-1], my_search):
@@ -153,7 +153,7 @@ def read_index_file(my_index_file, verbose = False):
     """
     Uncompress and reads the index file
     """
-    trace(f'Uncompressing & Reading index file : {my_index_file}', verbose)
+    trace(f'Uncompressing & reading index file : {my_index_file}', verbose)
     data = bz2.BZ2File(my_index_file + '.pbz2', 'rb')
     my_set = pickle.load(data)
     trace(f'Set length returned : {len(my_set)}', verbose)
