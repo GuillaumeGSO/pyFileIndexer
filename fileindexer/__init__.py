@@ -37,11 +37,11 @@ def main():
             (ignoré si pas en mode recherche)
     """
 
-    PATH_NAME = ''
-    INDEX_FILE_NAME = ''
-    FIND_STRING = ''
-    OUTPUT_FILE = ''
-    VERBOSE = False
+    path_name = ''
+    index_file_name = ''
+    find_string = ''
+    output_file = ''
+    verbose = False
 
     full_cmd_arguments = sys.argv
     argument_list = full_cmd_arguments[1:]
@@ -60,60 +60,65 @@ def main():
     for current_argument, current_value in arguments:
         if current_argument in ("-v", "--verbose"):
             print("Enabling verbose mode")
-            VERBOSE = True
+            verbose = True
         elif current_argument in ("-h", "--help"):
             print(__doc__)
         elif current_argument in ("-p", "--pathname"):
-            PATH_NAME = current_value
+            path_name = current_value
         elif current_argument in ("-i", "--index"):
-            INDEX_FILE_NAME = current_value
+            index_file_name = current_value
         elif current_argument in ("-f", "--find"):
-            FIND_STRING = current_value
+            find_string = current_value
         elif current_argument in ("-o", "--output"):
-            OUTPUT_FILE = current_value
+            output_file = current_value
 
-    # Appliquer les règles de fonctionnement le plus simplement possible
+    # Stop if arguments are incorrects
+    check_arguments(path_name, find_string, index_file_name, output_file, verbose)
 
+    # Search mode
+    if index_file_name != '' and find_string != '':
+        try:
+            search_with_wildcards(index_file_name, find_string, output_file, verbose)
+        except RuntimeError as err:
+            print("Erreur pendant la recherche... -v pour visualiser")
+            trace(str(err), verbose)
+            sys.exit(2)
+
+def check_arguments(path_name, find_string, index_file_name, output_file, verbose):
+    """
+    Verifies if arguments are correctly used or exit with error
+    """
     # Il faut au moins choisir un mode : indexation ou recherche
-    if PATH_NAME == '' and FIND_STRING == '':
+    if path_name == '' and find_string == '':
         print(__doc__)
         print("Erreur de syntaxe : ni indexation ni recherche demandée")
         sys.exit(2)
 
     # indexation et recherche incompatibles
-    if PATH_NAME != '' and FIND_STRING != '':
+    if path_name != '' and find_string != '':
         print(__doc__)
         print("<pathname> ne peut pas être utiliser en même temps que <search>")
         sys.exit(2)
 
     # indexation a besoin d'un chemin
-    if INDEX_FILE_NAME != '' and PATH_NAME == '' and FIND_STRING == '':
+    if index_file_name != '' and path_name == '' and find_string == '':
         print(__doc__)
         print("<pathname> obligatoire si demande d'indexation")
         sys.exit(2)
 
     # Recherche demandée sans fichier d'index
-    if INDEX_FILE_NAME == '':
+    if index_file_name == '':
         print(__doc__)
         print("<indexfilename> obligatoire pour lancer une recherche")
         sys.exit(2)
 
     # Lancement de l'indexation
-    if INDEX_FILE_NAME != '' and PATH_NAME != '':
-        if OUTPUT_FILE != '':
+    if index_file_name != '' and path_name != '':
+        if output_file != '':
             print("Warning : <output> est ignoré en mode indexation")
         try:
-            parse_directory(INDEX_FILE_NAME, PATH_NAME, VERBOSE)
+            parse_directory(index_file_name, path_name, verbose)
         except RuntimeError as err:
             print("Erreur pendant l'indexation...-v pour visualiser")
-            trace(str(err), VERBOSE)
-            sys.exit(2)
-
-    # Lancement recherche
-    if INDEX_FILE_NAME != '' and FIND_STRING != '':
-        try:
-            search_with_wildcards(INDEX_FILE_NAME, FIND_STRING, OUTPUT_FILE, VERBOSE)
-        except RuntimeError as err:
-            print("Erreur pendant la recherche... -v pour visualiser")
-            trace(str(err), VERBOSE)
+            trace(str(err), verbose)
             sys.exit(2)
